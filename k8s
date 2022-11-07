@@ -1,2 +1,5 @@
 kubeadm join 192.168.0.10:6443 --token xwdllc.zmdterof82wfrw7h \
 	--discovery-token-ca-cert-hash sha256:62b6f2374c04445bca5fb1474bd5d1c9579c3028279f2a9fdcea1a756027c792 
+
+
+kubeadm token create --print-join-command
