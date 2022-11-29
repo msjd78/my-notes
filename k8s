@@ -3,3 +3,6 @@ kubeadm join 192.168.0.10:6443 --token xwdllc.zmdterof82wfrw7h \
 
 
 kubeadm token create --print-join-command
+
+#A useful link for k8s cluster creation with containerd using kubeadm 
+https://devopsquare.com/how-to-create-kubernetes-cluster-with-containerd-90399ec3b810
