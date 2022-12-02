@@ -21,14 +21,6 @@ print( db_driver + "  >>>  " + db_path + "\n" )
 conn = pyodbc.connect(conn_str)
 
 
-
-#BankAccountTitle = "PK00ASCM0000000000000000"
-#Contact = "0314-4413111"
-#CNIC = "88888-8888888-8"
-#Emp_Name = "Muhammad Uzair Faisal Khan"
-#Company = "Fauji Kabirwala Power Company Limited"
-#EmployeeID = "40037"
-#AuthLetterNo = "8888888888"
 EmployeeID = '40076'
 
 
