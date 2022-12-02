@@ -6,3 +6,6 @@ kubeadm token create --print-join-command
 
 #A useful link for k8s cluster creation with containerd using kubeadm 
 https://devopsquare.com/how-to-create-kubernetes-cluster-with-containerd-90399ec3b810
+
+
+sudo kubeadm init --pod-network-cidr 192.168.0.0/16 --cri-socket /run/containerd/containerd.sock --control-plane-endpoint 10.10.10.100
