@@ -1,0 +1,80 @@
+# code snippets from stackoverflow multiple links
+# Last touched: 30-Nov-2022 
+
+import pyodbc
+import pandas as pd
+from PyPDF2 import PdfReader, PdfWriter
+
+
+db_driver = '{Microsoft Access Driver (*.mdb, *.accdb)};'
+db_path = './hr.mdb'
+
+conn_str = (rf'DRIVER={db_driver}' \
+            rf'DBQ={db_path};')
+#print("About to connect...")
+
+
+#print([x for x in pyodbc.drivers() if x.startswith("Microsoft Access Driver")])
+
+print("Connecting using:   ")
+print( db_driver + "  >>>  " + db_path + "\n" )
+conn = pyodbc.connect(conn_str)
+
+
+
+#BankAccountTitle = "PK00ASCM0000000000000000"
+#Contact = "0314-4413111"
+#CNIC = "88888-8888888-8"
+#Emp_Name = "Muhammad Uzair Faisal Khan"
+#Company = "Fauji Kabirwala Power Company Limited"
+#EmployeeID = "40037"
+#AuthLetterNo = "8888888888"
+EmployeeID = '40076'
+
+
+df = pd.read_sql(sql="select * from qry4Takafal where emp_code='" + EmployeeID + "'", con=conn)
+df.set_index(pd.Index(['']*len(df)), inplace=True)
+print(df)
+#df.hide_index()
+
+
+reader = PdfReader("adam.pdf")
+writer = PdfWriter()
+
+page = reader.pages[0]
+#fields = reader.get_fields()
+
+#print(fields)
+
+
+
+BankAccountTitle = df["BankAccountNo"]
+Contact = df["CELL_No"]
+CNIC = df["CNIC"]
+Emp_Name = df["EmpName"]
+Company = df["Company"]
+#EmployeeID = "40076"
+AuthLetterNo = df["ADAMJEE_INSURANCE_CARD_No"]
+gap_5 = "     "
+
+
+#print("******Bank title*******:  ", BankAccountTitle)
+
+writer.add_page(page)
+writer.update_page_form_field_values(
+    writer.pages[0], \
+    {"BankAccountTitle": gap_5 + BankAccountTitle, \
+    "Contact":  Contact, \
+    "CNIC": gap_5 + CNIC, \
+    "Emp_Name": gap_5 + Emp_Name, \
+    "Company": gap_5 + Company, \
+    "EmployeeID": gap_5 + EmployeeID, \
+    "AuthLetterNo": gap_5 + AuthLetterNo}
+)
+
+# write "output" to PyPDF2-output.pdf
+with open("filled-out.pdf", "wb") as output_stream:
+    writer.write(output_stream)
+    
+conn.close()
+print("Connection closed")
