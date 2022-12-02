@@ -9,3 +9,7 @@ https://devopsquare.com/how-to-create-kubernetes-cluster-with-containerd-90399ec
 
 
 sudo kubeadm init --pod-network-cidr 192.168.0.0/16 --cri-socket /run/containerd/containerd.sock --control-plane-endpoint 10.10.10.100
+
+
+#https://projectcalico.docs.tigera.io/getting-started/kubernetes/self-managed-onprem/onpremises
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/calico.yaml -O
