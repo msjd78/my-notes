@@ -15,3 +15,4 @@ sudo kubeadm init --pod-network-cidr 192.168.0.0/16 --cri-socket /run/containerd
 curl https://raw.githubusercontent.com/projectcalico/calico/v3.24.5/manifests/calico.yaml -O
 kubectl apply -f calico.yaml
 
+# https://www.golinuxcloud.com/deploy-multi-node-k8s-cluster-rocky-linux-8/
