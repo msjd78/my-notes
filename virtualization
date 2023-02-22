@@ -1,2 +1,22 @@
 # A url for adding non-standard LAN drivers into VMWare iso
 https://www.v-front.de/p/esxi-customizer-ps.html
+
+
+https://superuser.com/questions/826302/cant-use-1920x1080-resolution-on-xenserver-windows-7-guest#:~:text=XenServer%20uses%20Cirrus%20video%20driver,instead%20of%20Cirrus%20video%20driver.
+XenServer uses Cirrus video driver by default for all new VMs, which provides basic graphics and a maximum desktop resolution of 1024x768.
+
+To get better resolution (up to 2560x1600) and color depth (32bpp), you need to change VM parameters to use Standard VGA driver instead of Cirrus video driver.
+
+Shutdown your VM
+From the command line, find the UUID of your VM:
+xe vm-list
+Taking the UUID value, run the following two commands:
+xe vm-param-set uuid=<UUID> platform:vga=std
+xe vm-param-set uuid=<UUID> platform:videoram=16
+These steps have been tested on XenServer 6.5 and work perfectly!
+
+You can always switch back to using default Cirrus video driver by removing the above defined properties using the following commands:
+
+xe vm-param-remove uuid=<UUID> param-name=platform param-key=vga
+xe vm-param-remove uuid=<UUID> param-name=platform param-key=videoram
+Reference: http://xenserver.org/discuss-virtualization/virtualization-blog/entry/vga-over-cirrus-in-xenserver-6-2.html
