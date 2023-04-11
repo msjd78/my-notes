@@ -20,7 +20,7 @@ kubectl apply -f calico.yaml
 
 # https://www.golinuxcloud.com/deploy-multi-node-k8s-cluster-rocky-linux-8/
 
-
+# https://www.weave.works/blog/deploying-an-application-on-kubernetes-from-a-to-z
 ###########################################################
 #Steps by Sir Aareez Asif from https://youtu.be/OywF5oARYSI
 ###########################################################
@@ -88,3 +88,108 @@ wget https://github.com/weaveworks/weave/releases/download/v2.8.1/weave-daemonse
 
 #Step 14: Now apply the daemonset yaml!
 kubectl apply -f weave-daemonset-k8s.yaml
+
+
+
+
+K8s Cluster setup on Ubuntu 22.04 with Calico, By Sir Babar Zahoor from following link
+https://opensourceeducation.net/kubernetes-cluster-installation-using-kubeadm
+#Step 1: Prepare Nodes
+nano /etc/hosts
+10.0.0.2      master1.maas  master1
+10.0.0.3      worker1.maas  worker1
+
+#Step 2: Disable swap
+swapoff -a   # Also edit /etc/fstab to comment swap partition to avoid swap after reboot
+
+#Step 3: Setup the bridge for IPV4
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+# sysctl params required by setup, params persist across reboots
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+
+# Apply sysctl params without reboot
+sudo sysctl --system
+
+#Step 4: Update system and install basic utilities for further installation 
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl
+
+# Step 5: Download the Google Cloud public signing key
+sudo mkdir /etc/apt/keyrings
+sudo curl -fsSLo /etc/apt/keyrings/kubernetes-archive-keyring.gpg https://packages.cloud.google.com/apt/doc/apt-key.gpg
+
+# Step 6: Add the Kubernetes apt repository
+echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+# Step 7: Update apt package index, install kubelet, kubeadm, kubectl and docker.io, and pin their version
+sudo apt-get update
+sudo apt-get install -y kubelet kubeadm kubectl docker.io
+sudo apt-mark hold kubelet kubeadm kubectl docker.io
+
+# Step 8: Containerd setting
+sudo mkdir /etc/containerd
+sudo containerd config default > /etc/containerd/config.toml
+sudo sed -i 's/            SystemdCgroup = false/            SystemdCgroup = true/' /etc/containerd/config.toml
+sudo systemctl restart containerd
+sudo systemctl restart kubelet
+
+# Step 9: Initialize k8s cluster with user defined network
+kubeadm init --pod-network-cidr=192.168.0.0/16
+
+# Step 10: Setup kubectl for user on maste node
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+# Step 11: Setup Calico SDN, if network in kubeadm init is different than 192.168.0.0/19, then edit custom-resources.yaml file accordingly
+kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/tigera-operator.yaml
+curl https://raw.githubusercontent.com/projectcalico/calico/v3.25.0/manifests/custom-resources.yaml -O
+kubectl apply -f custom-resources.yaml
+
+# Step 12: Join worker node(s)
+kubeadm join 10.0.0.2:6443 --token ndi3ae.ujwfcuais8zm2cyn --discovery-token-ca-cert-hash sha256:fc6c1094159833bf95a3fcb7d49960026e4ddad56f8648b94240cd1c867b2f6b
+
+#Step 13 (Optional): If you need to generate token for kubeadm join command
+kubeadm token create --print-join-command
+
+# Step 14: Watch till all CNI related pods are up and running
+watch kubectl get po -A
+
+# Wait till all following pods appear running
+---------------------------------------------------------------------------------------------------
+NAMESPACE          NAME                                       READY   STATUS    RESTARTS        AGE
+calico-apiserver   calico-apiserver-5ffd64dc97-5t5hv          1/1     Running   1 (3m17s ago)   31m
+calico-apiserver   calico-apiserver-5ffd64dc97-grdmg          1/1     Running   1 (3m18s ago)   31m
+calico-system      calico-kube-controllers-6b7b9c649d-rgdt2   1/1     Running   1 (3m17s ago)   32m
+calico-system      calico-node-l8bzk                          1/1     Running   1 (3m17s ago)   32m
+calico-system      calico-node-vz27s                          1/1     Running   1 (3m18s ago)   32m
+calico-system      calico-typha-85944f6bfb-75zlv              1/1     Running   2 (2m31s ago)   32m
+calico-system      csi-node-driver-2fvkb                      2/2     Running   2 (3m17s ago)   31m
+calico-system      csi-node-driver-m9r4l                      2/2     Running   2 (3m18s ago)   31m
+kube-system        coredns-787d4945fb-9f2rz                   1/1     Running   1 (3m17s ago)   36m
+kube-system        coredns-787d4945fb-ngv8f                   1/1     Running   1 (3m17s ago)   36m
+kube-system        etcd-k8s-master                            1/1     Running   1 (3m18s ago)   36m
+kube-system        kube-apiserver-k8s-master                  1/1     Running   1 (3m18s ago)   36m
+kube-system        kube-controller-manager-k8s-master         1/1     Running   1 (3m18s ago)   36m
+kube-system        kube-proxy-2rjwc                           1/1     Running   1 (3m18s ago)   36m
+kube-system        kube-proxy-gv2z9                           1/1     Running   1 (3m17s ago)   33m
+kube-system        kube-scheduler-k8s-master                  1/1     Running   1 (3m18s ago)   36m
+tigera-operator    tigera-operator-54b47459dd-bmfbj           1/1     Running   2 (2m29s ago)   32m
+---------------------------------------------------------------------------------------------------
+
+happy kuberneting :)
+
+
+
+
