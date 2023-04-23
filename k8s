@@ -7,7 +7,7 @@ https://devopsquare.com/how-to-create-kubernetes-cluster-with-containerd-90399ec
 # Sample init command
 sudo kubeadm init --pod-network-cidr 192.168.0.0/16 --cri-socket /run/containerd/containerd.sock --control-plane-endpoint 10.10.10.100
 
-$ Sample koin command
+# Sample join command
 sudo kubeadm join 172.16.4.90:6443 \
 	--token 7i34jm.q8enu8wxvfic9s8k \
         --discovery-token-ca-cert-hash sha256:202117e62f133323eff707919ec512eef466a59a29454c4ee320a0626ff42c05 \
