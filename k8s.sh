@@ -39,9 +39,10 @@ systemctl restart kubelet.service
 systemctl start docker.service
 systemctl enable kubelet.service
 systemctl enable docker.service
-systemctl status kubelet.service
-systemctl status docker.service
+#systemctl status kubelet.service
+#systemctl status docker.service
 #----------------------
+kubeadm config images pull
 kubeadm init --pod-network-cidr=192.168.0.0/16 #--kubernetes-version=1.25.9 --ignore-preflight-errors=all
 #exit
 #------------------
