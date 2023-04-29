@@ -1,10 +1,9 @@
 #! /bin/bash
-#sudo -i
+
 swapoff -a
 sed -i '/ swap / s/^\(.*\)$/#\1/g' /etc/fstab
 apt update
 apt full-upgrade -y
-#Restart machine
 #---------------------
 cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
 overlay
@@ -33,24 +32,21 @@ apt-mark hold kubelet kubeadm kubectl docker.io
 mkdir /etc/containerd
 containerd config default > /etc/containerd/config.toml
 sudo sed -i 's/            SystemdCgroup = false/            SystemdCgroup = true/' /etc/containerd/config.toml
-
+#-----------
 systemctl restart containerd.service
 systemctl restart kubelet.service
 systemctl start docker.service
 systemctl enable kubelet.service
 systemctl enable docker.service
-#systemctl status kubelet.service
-#systemctl status docker.service
 #----------------------
 kubeadm config images pull
 kubeadm init --pod-network-cidr=192.168.0.0/16 #--kubernetes-version=1.25.9 --ignore-preflight-errors=all
-#exit
 #------------------
 mkdir -p $HOME/.kube
-cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
-chown $(id -u):$(id -g) $HOME/.kube/config
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
 #------------
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/tigera-operator.yaml
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.25.1/manifests/custom-resources.yaml
-
-watch kubectl get pods -n calico-system
+#-----------
+watch -n5 kubectl get pods -A
