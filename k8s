@@ -1,3 +1,5 @@
+# Install microk8s on CentOS/OL etc
+https://snapcraft.io/install/microk8s/centos#install
 
 kubeadm token create --print-join-command
 
